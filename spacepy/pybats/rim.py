@@ -339,9 +339,10 @@ class Iono(PbData):
         self['s_Iup']   = units*R**2 * np.sum(integrand[loc_up])
         self['s_Idown'] = units*R**2 * np.sum(integrand[loc_do])
 
-    def add_cont(self, var, target=None, n=50, maxz=False, lines=False,
-                 cmap=False, add_cbar=False, label=None, loc=111,
-                 xticksize=12, yticksize=12, max_colat=40, **kwargs):
+    def add_cont(self, var, target=None, n=24, maxz=False, lines=True,
+                 add_phi=False, cmap=False, add_cbar=False, mag_stations={},
+                 label=None, loc=111, xticksize=12, yticksize=12, max_colat=40,
+                 **kwargs):
         '''
         Create a polar contour of variable *var*.  Plot will be either drawn
         on a new matplotlib figure and axes, or you can specify a plot target
@@ -452,6 +453,13 @@ class Iono(PbData):
         cnt1 = ax.contourf(self[hemi+'psi']*pi/180.0+pi/2., theta,
                            np.array(self[var]), levs, norm=crange, cmap=cmap,
                            **kwargs)
+
+        # if add phi contour lines
+        if add_phi is True:
+            cnt_phi = ax.contour(self[hemi+'psi']*pi/180.0+pi/2.,
+                                 theta, np.array(self[hemi+'phi']),
+                                 colors='k',linewidths=0.8, **kwargs)
+
         # Set xtick label size, increase font of top label.
         labels = ax.get_xticklabels()
         for l in labels: l.set_size(xticksize)
@@ -469,6 +477,14 @@ class Iono(PbData):
             cbar.set_label(tex_label(self[var].attrs['units']))
         else:
             cbar=False
+
+        # add annotations for magnetometer stations
+        if len(mag_stations)>0:
+            for station in mag_stations.keys():
+                plot_lon = mag_stations[station][0]/180.*pi-pi
+                plot_lat = 90.-mag_stations[station][1]
+                ax.text(plot_lon, plot_lat, station, color='blue', size=6)
+
         ax.set_xticks(xticks)
         ax.set_xticklabels(lt_labels)
         ax.yaxis.set_major_locator(lct)
