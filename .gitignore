@@ -9,3 +9,4 @@ QuickStartGuide.synctex.gz
 *~
 *.o
 .spyder*
+spacepy.egg-info/
