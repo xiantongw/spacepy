@@ -341,8 +341,8 @@ class Iono(PbData):
 
     def add_cont(self, var, target=None, n=24, maxz=False, lines=True,
                  add_phi=False, cmap=False, add_cbar=False, mag_stations={},
-                 label=None, loc=111, xticksize=12, yticksize=12, max_colat=40,
-                 **kwargs):
+                 footpoints={}, label=None, loc=111, xticksize=12, yticksize=12,
+                 max_colat=40, **kwargs):
         '''
         Create a polar contour of variable *var*.  Plot will be either drawn
         on a new matplotlib figure and axes, or you can specify a plot target
@@ -450,9 +450,14 @@ class Iono(PbData):
         if 's_' in hemi: theta = 180-self[hemi+'theta']
 
         # Create contour:
-        cnt1 = ax.contourf(self[hemi+'psi']*pi/180.0+pi/2., theta,
-                           np.array(self[var]), levs, norm=crange, cmap=cmap,
-                           **kwargs)
+        if maxz:
+            cnt1 = ax.contourf(self[hemi+'psi']*pi/180.0+pi/2., theta,
+                                np.clip(np.array(self[var]), -1.0*maxz, maxz), levs, 
+                                norm=crange, cmap=cmap, **kwargs)
+        else:
+            cnt1 = ax.contourf(self[hemi+'psi']*pi/180.0+pi/2., theta,
+                            np.array(self[var]), levs, norm=crange, cmap=cmap,
+                            **kwargs)
 
         # if add phi contour lines
         if add_phi is True:
@@ -479,11 +484,17 @@ class Iono(PbData):
             cbar=False
 
         # add annotations for magnetometer stations
-        if len(mag_stations)>0:
+        if len(mag_stations) > 0:
             for station in mag_stations.keys():
                 plot_lon = mag_stations[station][0]/180.*pi-pi
                 plot_lat = 90.-mag_stations[station][1]
                 ax.text(plot_lon, plot_lat, station, color='blue', size=6)
+
+        if len(footpoints) > 0:
+            for ifootpoint in footpoints.keys():
+                plot_lon = footpoints[ifootpoint][0]/180.*pi+pi/2.
+                plot_lat = 90.-footpoints[ifootpoint][1]
+                ax.plot(plot_lon, plot_lat, '.', color='blue')
 
         ax.set_xticks(xticks)
         ax.set_xticklabels(lt_labels)
