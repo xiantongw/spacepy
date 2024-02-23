@@ -462,8 +462,10 @@ class Iono(PbData):
         # if add phi contour lines
         if add_phi is True:
             cnt_phi = ax.contour(self[hemi+'psi']*pi/180.0+pi/2.,
-                                 theta, np.array(self[hemi+'phi']),
+                                 theta, np.array(self[hemi+'phi']), levels=10, 
                                  colors='k',linewidths=0.8, **kwargs)
+            # add contour label for phi contour lines
+            ax.clabel(cnt_phi, cnt_phi.levels, inline=True, fontsize=6, **kwargs)
 
         # Set xtick label size, increase font of top label.
         labels = ax.get_xticklabels()
